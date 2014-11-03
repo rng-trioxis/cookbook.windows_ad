@@ -93,34 +93,6 @@ action :delete do
   end
 end
 
-action :join do
-  if exists?
-    Chef::Log.error("The domain does not exist or was not reachable, please check your network settings")
-    new_resource.updated_by_last_action(false)
-  else
-    if computer_exists?
-      Chef::Log.debug("The computer is already joined to the domain")
-      new_resource.updated_by_last_action(false)
-    else
-      powershell_script "join_#{new_resource.name}" do
-        if node[:os_version] >= "6.2"
-          code <<-EOH
-            $secpasswd = ConvertTo-SecureString '#{new_resource.domain_pass}' -AsPlainText -Force
-            $mycreds = New-Object System.Management.Automation.PSCredential  ('#{new_resource.domain_user}', $secpasswd)
-            Add-Computer -DomainName #{new_resource.name} -Credential $mycreds -Force:$true -Restart
-          EOH
-        else
-          code "netdom join #{node[:hostname]} /d #{new_resource.name} /ud:#{new_resource.domain_user} /pd:#{new_resource.domain_pass} /ou:"OU=Terminal Server,OU=Computers,OU=Frontline Recruitment Group,DC=Frontlinetesting,DC=lan"/reboot"
-        end
-      end
-
-    new_resource.updated_by_last_action(false)
-    end
-
-    new_resource.updated_by_last_action(true)
-  end
-end
-
 action :unjoin do
   if computer_exists?
     powershell_script "unjoin_#{new_resource.name}" do
