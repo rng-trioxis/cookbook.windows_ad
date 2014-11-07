@@ -34,6 +34,7 @@ action :create do
     new_resource.updated_by_last_action(false)
   else
     if node[:os_version] >= "6.2"
+	  print "It is a 6.2 OS"
       cmd = "$secpasswd = ConvertTo-SecureString '#{new_resource.domain_pass}' -AsPlainText -Force;"
       cmd << "$mycreds = New-Object System.Management.Automation.PSCredential  ('#{new_resource.domain_user}', $secpasswd);"
       cmd << create_command
@@ -41,6 +42,7 @@ action :create do
       cmd << " -SafeModeAdministratorPassword (convertto-securestring '#{new_resource.safe_mode_pass}' -asplaintext -Force)"
       cmd << " -Force:$true"
     else node[:os_version] <= "6.1"
+	  print "It is less 6.2 OS"
       cmd = "dcpromo -unattend"
       cmd << " -newDomain:#{new_resource.type}"
       cmd << " -NewDomainDNSName:#{new_resource.name}"
@@ -110,7 +112,7 @@ action :join do
             Add-Computer -DomainName #{new_resource.name} -Credential $mycreds -Force:$true -Restart
           EOH
         else
-          code "netdom join #{node[:hostname]} /d #{new_resource.name} /ud:#{new_resource.domain_user} /pd:#{new_resource.domain_pass} /ou:\"OU=Terminal Server,OU=Computers,OU=Frontline Recruitment Group,DC=Frontlinetesting,DC=lan\" /reboot"
+          code "netdom join #{node[:hostname]} /d #{new_resource.name} /ud:#{new_resource.domain_user} /pd:#{new_resource.domain_pass} /ou: \'OU=Terminal Server,OU=Computers,OU=Frontline Recruitment Group,DC=Frontlinetesting,DC=lan\' /reboot"
         end
       end
 
