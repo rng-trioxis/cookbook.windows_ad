@@ -124,13 +124,17 @@ end
 action :unjoin do
   if computer_exists?
     powershell_script "unjoin_#{new_resource.name}" do
-      code <<-EOH
-      $secpasswd = ConvertTo-SecureString '#{new_resource.domain_pass}' -AsPlainText -Force
-      $mycreds = New-Object System.Management.Automation.PSCredential ('#{new_resource.domain_user}', $secpasswd)
-      Remove-Computer -UnjoinDomainCredential $mycreds -Force:$true -Restart
-      EOH
+	  if node[:os_version] >= "6.2"
+		  code <<-EOH
+		  $secpasswd = ConvertTo-SecureString '#{new_resource.domain_pass}' -AsPlainText -Force
+		  $mycreds = New-Object System.Management.Automation.PSCredential ('#{new_resource.domain_user}', $secpasswd)
+		  Remove-Computer -UnjoinDomainCredential $mycreds -Force:$true -Restart
+		  EOH
+      else
+		  code "netdom remove /d #{new_resource.name} #{node[:hostname]} /ud:#{new_resource.domain_user} /pd:#{new_resource.domain_pass} /reboot"
+	  end
     end
-
+	
     new_resource.updated_by_last_action(true)
   else
     Chef::Log.debug("The computer is already a member of a workgroup")
