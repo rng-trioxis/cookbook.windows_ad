@@ -110,7 +110,8 @@ action :join do
             Add-Computer -DomainName #{new_resource.name} -Credential $mycreds -Force:$true -Restart
           EOH
         else
-          code "netdom join #{node[:hostname]} /d #{new_resource.name} /ud:#{new_resource.domain_user} /pd:#{new_resource.domain_pass} /ou:\'#{new_resource.ou}\' /reboot"
+          code "netdom join #{node[:hostname]} /d #{new_resource.name} /ud:#{new_resource.domain_user} /pd:#{new_resource.domain_pass} /ou: \'#{new_resource.ou}\' /reboot"	  
+		  
         end
       end
 
