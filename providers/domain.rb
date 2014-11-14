@@ -132,7 +132,7 @@ action :unjoin do
 		  Remove-Computer -UnjoinDomainCredential $mycreds -Force:$true -Restart
 		  EOH
       else
-		  code "netdom remove /d #{new_resource.name} #{node[:hostname]} /ud:#{new_resource.domain_user} /pd:#{new_resource.domain_pass} /reboot"
+		  code "netdom remove /d:#{new_resource.name} #{node[:hostname]} /ud:#{new_resource.domain_user} /pd:#{new_resource.domain_pass} /reboot"
 	  end
     end
 	
