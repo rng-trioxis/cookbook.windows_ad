@@ -103,11 +103,12 @@ action :join do
       new_resource.updated_by_last_action(false)
     else
       powershell_script "join_#{new_resource.name}" do
-        if node[:os_version] >= "6.1"
+        if (node[:os_version] >= "6.1") and ("#{new_resource.newname}".length > 0)
           code <<-EOH
             $secpasswd = ConvertTo-SecureString '#{new_resource.domain_pass}' -AsPlainText -Force
+            $domain = '#{new_resource.name}'
             $mycreds = New-Object System.Management.Automation.PSCredential  ('#{new_resource.domain_user}', $secpasswd)
-            Add-Computer -DomainName #{new_resource.name} -Credential $mycreds -OUPath \"#{new_resource.ou}\" -newname \"#{new_resource.newname}\" -Force:$true -Restart
+            Add-Computer -DomainName $domain -Credential $mycreds -OUPath \"#{new_resource.ou}\" -ComputerName #{node[:hostname]} -newname \"#{new_resource.newname}\" -Force:$true -Restart
           EOH
         else	  
           code "netdom join #{node[:hostname]} /d #{new_resource.name} /ud:#{new_resource.domain_user} /pd:#{new_resource.domain_pass} /ou: \'#{new_resource.ou}\' /reboot"  
