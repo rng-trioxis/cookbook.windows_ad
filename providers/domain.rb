@@ -105,9 +105,10 @@ action :join do
       powershell_script "join_#{new_resource.name}" do
         if ("#{new_resource.newname}".length > 0)
           code <<-EOH
-          netdom join #{node[:hostname]} /d #{new_resource.name} /ud:#{new_resource.domain_user} /pd:#{new_resource.domain_pass} /ou: \'#{new_resource.ou}\'
-          netdom reset /d:#{new_resource.newname} #{node[:hostname]}
-          netdom renamecomputer #{node[:hostname]} /newname:#{new_resource.newname} /ud:#{new_resource.domain_user} /pd:#{new_resource.domain_pass} /force /reboot 
+          	 $secpasswd = ConvertTo-SecureString '#{new_resource.domain_pass}' -AsPlainText -Force
+          	 $mycreds = New-Object System.Management.Automation.PSCredential  ('#{new_resource.domain_user}', $secpasswd)
+          	 Rename-Computer -NewName #{new_resource.newname}
+          	 Add-computer -DomainName #{new_resource.name} -Credential $Credential -OUPath #{new_resource.ou} -force -Options JoinWithNewName,AccountCreate -restart
           EOH
         else	  
           code "netdom join #{node[:hostname]} /d #{new_resource.name} /ud:#{new_resource.domain_user} /pd:#{new_resource.domain_pass} /ou: \'#{new_resource.ou}\' /reboot"  
