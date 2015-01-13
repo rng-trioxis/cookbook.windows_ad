@@ -107,6 +107,7 @@ action :join do
           code <<-EOH
           	 $secpasswd = ConvertTo-SecureString '#{new_resource.domain_pass}' -AsPlainText -Force
           	 $username = '#{new_resource.domain_user}'
+          	 $mycreds = New-Object System.Management.Automation.PSCredential  ($username, $secpasswd)
           	 Rename-Computer -NewName #{new_resource.newname}
           	 Add-computer -DomainName #{new_resource.name} -Credential $mycreds -OUPath \"#{new_resource.ou}\" -force -Options JoinWithNewName,AccountCreate -restart
           EOH
